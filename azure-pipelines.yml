@@ -1,0 +1,33 @@
+name: stewart-$(Rev:rr)
+
+trigger:
+  branches:
+    include:
+      - master
+
+pr: none
+
+stages:
+  - stage: Stewart
+    jobs:
+      - job: Build
+
+        pool:
+          name: 'Devolutions - Linux containers'
+
+        container:
+          image: golang:1.15.0-buster
+
+        steps:
+          - script: GOOS=darwin GOARCH=amd64 go build -o $(Build.ArtifactStagingDirectory)/stewart-macos-$(cat VERSION)
+            displayName: Build macOS executable
+
+          - script: GOOS=linux GOARCH=amd64 go build -o $(Build.ArtifactStagingDirectory)/stewart-linux-$(cat VERSION)
+            displayName: Build linux executable
+
+          - script: GOOS=linux GOARCH=amd64 go build -o $(Build.ArtifactStagingDirectory)/stewart-windows-$(cat VERSION).exe
+            displayName: Build windows executable
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: stewart
