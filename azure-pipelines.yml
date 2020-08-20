@@ -80,6 +80,9 @@ stages:
               cp $(Build.ArtifactStagingDirectory)/stewart/stewart-macos-${VERSION} $(Build.Repository.LocalPath)/tools/stewart/stewart-macos
               cp $(Build.ArtifactStagingDirectory)/stewart/stewart-windows-${VERSION}.exe $(Build.Repository.LocalPath)/tools/stewart/stewart-windows.exe
 
+              chmod +x $(Build.Repository.LocalPath)/tools/stewart/stewart-linux
+              chmod +x $(Build.Repository.LocalPath)/tools/stewart/stewart-macos
+
               $(Build.Repository.LocalPath)/tools/git/commit-to-repository.sh
 
               export DESCRIPTION=${GIT_COMMENT}
