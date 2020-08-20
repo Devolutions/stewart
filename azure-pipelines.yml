@@ -7,6 +7,16 @@ trigger:
 
 pr: none
 
+variables:
+  - group: stewart
+
+resources:
+  repositories:
+  - repository: azure-devops
+    type: bitbucket
+    endpoint: 'Bitbucket - bot'
+    name: devolutions/azure-devops
+
 stages:
   - stage: Stewart
     jobs:
@@ -28,6 +38,59 @@ stages:
           - script: GOOS=linux GOARCH=amd64 go build -o $(Build.ArtifactStagingDirectory)/stewart-windows-$(cat VERSION).exe
             displayName: Build windows executable
 
+          - script: cp VERSION $(Build.ArtifactStagingDirectory)/
+            displayName: Archive VERSION
+
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: stewart
+
+  - stage: Import_To_Azure_Devops_Repo
+    dependsOn: Stewart
+    jobs:
+      - job: Commit_N_Push
+
+        pool:
+          name: 'Devolutions - Linux containers'
+
+        container:
+          image: devolutions/toolbox:0.5.0
+
+        steps:
+          - checkout: azure-devops
+            persistCredentials: true
+            clean: true
+
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: stewart
+
+          - script: |
+              export VERSION_FILE=$(Build.ArtifactStagingDirectory)/stewart/VERSION
+              export VERSION=$(cat ${VERSION_FILE})
+              export BRANCH=importing-stewart-${VERSION}-$(git rev-parse --short HEAD)
+              export COMMITER="[bot:stewart]"
+              export GIT_COMMENT="importing steward ${VERSION}"
+              export REPOSITORY=$(Build.Repository.LocalPath)
+              export PATH_TO_CHANGES=$(Build.Repository.LocalPath)/tools/stewart/
+
+              mkdir -p $(Build.Repository.LocalPath)/tools/stewart/
+
+              cp $(Build.ArtifactStagingDirectory)/stewart/stewart-linux-${VERSION} $(Build.Repository.LocalPath)/tools/stewart/stewart-linux
+              cp $(Build.ArtifactStagingDirectory)/stewart/stewart-macos-${VERSION} $(Build.Repository.LocalPath)/tools/stewart/stewart-macos
+              cp $(Build.ArtifactStagingDirectory)/stewart/stewart-windows-${VERSION}.exe $(Build.Repository.LocalPath)/tools/stewart/stewart-windows.exe
+
+              $(Build.Repository.LocalPath)/tools/git/commit-to-repository.sh
+
+              export DESCRIPTION=${GIT_COMMENT}
+              export GIT_ORIGIN_BRANCH=${BRANCH}
+              export GIT_DEST_BRANCH=master
+              export REPOSITORY=azure-devops
+              export TITLE=${GIT_COMMENT}
+
+              $(Build.Repository.LocalPath)/tools/git/open-bitbucket-pull-request.sh
+            displayName: Import Stewart into azure-devops repo
+            workingDirectory: $(Build.Repository.LocalPath)
+            env:
+              USER: $(BITBUCKET_USERNAME)
+              PASSWORD: $(BITBUCKET_PASSWORD)
