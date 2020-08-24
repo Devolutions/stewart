@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"runtime"
+	"strings"
 )
 
 func init() {
@@ -50,6 +53,26 @@ func main() {
 	streamCmdOutput(cmd)
 }
 
+func createWorkspace(name string) {
+	getCmdOutput(fmt.Sprintf("terraform workspace new %s", name))
+}
+
+func doesWorkspaceExists(workspace string) bool {
+	workspaces := getCmdOutput("terraform workspace list")
+
+	scanner := bufio.NewScanner(strings.NewReader(string(workspaces)))
+	for scanner.Scan() {
+		re := regexp.MustCompile(workspace)
+		matched := re.FindStringSubmatch(scanner.Text())
+
+		if len(matched) > 0 {
+			return true
+		}
+	}
+
+	return false
+}
+
 func initBackend() {
 	info("initializing backend")
 	streamCmdOutput("terraform init")
@@ -57,6 +80,11 @@ func initBackend() {
 
 func switchWorkspace(workspace string) {
 	info(fmt.Sprintf("switching to workspace: %s", workspace))
+
+	if !doesWorkspaceExists(workspace) {
+		createWorkspace(workspace)
+	}
+
 	streamCmdOutput(fmt.Sprintf("terraform workspace select %s ", workspace))
 }
 
