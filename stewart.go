@@ -39,6 +39,12 @@ func init() {
 func main() {
 	subCommand := os.Args[1]
 	environment := os.Args[2]
+	cwd, _ := os.Getwd()
+	environmentFile := fmt.Sprintf("%s/environments/%s.tfvars", cwd, environment)
+
+	if _, err := os.Stat(environmentFile); os.IsNotExist(err) {
+		fail(fmt.Sprintf("Environment file %s doesn't exists", environmentFile))
+	}
 
 	cmd := fmt.Sprintf("terraform %s -var-file environments/%s.tfvars", subCommand, environment)
 
