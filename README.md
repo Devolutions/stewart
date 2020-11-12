@@ -15,6 +15,12 @@ Stewart requires 2 arguments:
 + a Terraform subcommand
 + an environment
 
+It's also possible to pass optional arguments like the example below to import a resource for example:
+
+~~~
+stewart import development azurerm_resource_group.main[\"hello\"] /subscriptions/$some_ID/resourceGroups/hello-world-development
+~~~
+
 Basically, an subcommand is passed straight to Terraform with no validation. Terraform will raise an error if the command
 doesn't exist. As for the environment, it will try to use the file `environments/$environment.tfvars`, so if that doesn't
 exist, Terraform will also raise an error.
