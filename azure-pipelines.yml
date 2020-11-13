@@ -35,7 +35,7 @@ stages:
           - script: GOOS=linux GOARCH=amd64 go build -o $(Build.ArtifactStagingDirectory)/stewart-linux-$(cat VERSION)
             displayName: Build linux executable
 
-          - script: GOOS=linux GOARCH=amd64 go build -o $(Build.ArtifactStagingDirectory)/stewart-windows-$(cat VERSION).exe
+          - script: GOOS=windows GOARCH=amd64 go build -o $(Build.ArtifactStagingDirectory)/stewart-windows-$(cat VERSION).exe
             displayName: Build windows executable
 
           - script: cp VERSION $(Build.ArtifactStagingDirectory)/
