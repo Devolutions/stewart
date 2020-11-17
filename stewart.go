@@ -39,6 +39,7 @@ func init() {
 func main() {
 	subCommand := os.Args[1]
 	environment := os.Args[2]
+	otherArgs := os.Args[3:]
 	cwd, _ := os.Getwd()
 	environmentFile := fmt.Sprintf("%s/environments/%s.tfvars", cwd, environment)
 
@@ -46,9 +47,15 @@ func main() {
 		fail(fmt.Sprintf("Environment file %s doesn't exists", environmentFile))
 	}
 
-	cmd := fmt.Sprintf("terraform %s -var-file environments/%s.tfvars", subCommand, environment)
+	extraArgs := ""
+	if len(otherArgs) >= 1 {
+		extraArgs = fmt.Sprintf(" %s", strings.Join(otherArgs, " "))
+	}
 
-	if subCommand == "apply" {
+	cmd := fmt.Sprintf("terraform %s -var-file environments/%s.tfvars%s", subCommand, environment, extraArgs)
+	fmt.Println(cmd)
+
+	if subCommand == "apply" && !strings.Contains(cmd, "-auto-approve") {
 		cmd += " -auto-approve"
 	}
 
