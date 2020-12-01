@@ -54,7 +54,7 @@ stages:
           name: 'Devolutions - Linux containers'
 
         container:
-          image: devolutions/toolbox:0.5.0
+          image: devolutions/toolbox:latest
 
         steps:
           - checkout: azure-devops
