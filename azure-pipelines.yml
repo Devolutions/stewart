@@ -5,7 +5,12 @@ trigger:
     include:
       - master
 
-pr: none
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - '*'
+  drafts: false
 
 variables:
   - group: stewart
