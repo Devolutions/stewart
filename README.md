@@ -1,4 +1,4 @@
-Terraform wrapper used by ITops to implement our workspace/environment variables files setups.
+Terraform wrapper to simply the use of workspace/environment variables files setups.
 
 The wrapper was kept very simple, it doesn't really validate any inputs. It relies on Terraform
 to do that.
